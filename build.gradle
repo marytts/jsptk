@@ -1,0 +1,144 @@
+plugins {
+    id 'cpp'
+    id "java"
+    id 'maven-publish'
+    id "net.tribe-seven.swig" version "0.1.1"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    jcenter()
+    maven { url 'https://oss.jfrog.org/artifactory/oss-snapshot-local' }
+}
+
+dependencies {
+    testCompile group: 'org.testng', name: 'testng', version: '6.8.13'
+    testCompile group: 'com.google.guava', name: 'guava', version: '18.0'
+}
+
+test {
+    useTestNG()
+}
+
+task generateSrc(type: SwigTask) {
+    description "Generate the JNI wrapping necessary files"
+
+    // FIXME
+    verbose = true
+    enableCpp = true
+
+    // Pathes
+    javaSourcesPath = file("$buildDir/generatedSrc/main/java/jsptk")
+    source = new File("$projectDir/swig/sptk.i")
+    wrapperTargetFile = file("$buildDir/generatedSrc/main/cpp/sptk_wrap.cpp")
+    ext {
+        sourceDir = layout.buildDirectory.dir('generatedSrc/main/cpp')
+        headerDir = layout.projectDirectory.dir('SPTK/include')
+    }
+
+    // Java info
+    module = "Sptk"
+    packageName = "jsptk"
+}
+
+
+sourceSets {
+    main {
+        java {
+            srcDirs += generateSrc.javaSourcesPath
+        }
+    }
+}
+
+compileJava {
+    mustRunAfter generateSrc
+}
+
+model {
+    components {
+        sptk(NativeLibrarySpec) {
+            sources {
+                generated(CppSourceSet) {
+                    generatedBy tasks.generateSrc
+                }
+
+                cpp {
+                    source {
+                        srcDirs 'Sptk/src'
+                        include '*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDir 'Sptk/src'
+                        include 'sptk/*.h'
+                    }
+                }
+            }
+
+            binaries {
+                all {
+                    cppCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include"
+                    switch (targetPlatform.operatingSystem) {
+                        case { it.macOsX }:
+                            cppCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include/darwin"
+                            break
+                        case { it.linux }:
+                            cppCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include/linux"
+                            break
+                    }
+                }
+            }
+        }
+    }
+
+    tasks {
+        processResources {
+            dependsOn sptkSharedLibrary
+            from "${buildDir}/libs/", {
+                include '**/libsptk.*'
+                eachFile {
+                    it.path = it.name
+                }
+                includeEmptyDirs = false
+            }
+        }
+    }
+}
+
+
+
+
+/**********************************************************************************************
+ ** Project meta + publishing part
+ ***********************************************************************************************/
+version '0.5-SNAPSHOT'
+group "de.dfki.mary"
+description "Artifact containing a wrapper for the Sptk vocoder"
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourceJar {
+                classifier 'sources'
+            }
+        }
+    }
+    repositories {
+        maven {
+            url "$rootProject.buildDir/repo"
+        }
+        maven {
+            url version.endsWith('-SNAPSHOT') ? 'https://oss.jfrog.org/artifactory/oss-snapshot-local' : ''
+            credentials {
+                username = findProperty('bintrayUser')
+                password = findProperty('bintrayApiKey')
+            }
+        }
+    }
+}
