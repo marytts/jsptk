@@ -1,16 +1,34 @@
 package jsptk;
 
 /**
- *
+ *  Class which provides static utility methods
  *
  * @author <a href="mailto:slemaguer@coli.uni-saarland.de">Sébastien Le Maguer</a>
  */
 public class JSPTKUtil
 {
+    /**
+     *  Compute the most accurate alpha value needed for mel-cepstral analysis based on the sample
+     *  rate
+     *
+     *  @param fs the sample rate
+     *  @return the alpha value
+     */
     public static double getMCEPAlpha(int fs) {
         return getMCEPAlpha(fs, 0.0, 1.0, 0.001, 1000);
     }
 
+    /**
+     *  Compute the most accurate alpha value needed for mel-cepstral analysis based on the sample
+     *  rate. Other parameters are there to tune the distance computation
+     *
+     *  @param fs the sample rate
+     *  @param start the start value
+     *  @param stop the stop value
+     *  @param the step to divide the interval between start and stop
+     *  @param num_points the number of points used for the mel scale vector computation
+     *  @return the alpha value
+     */
     public static double getMCEPAlpha(int fs, double start, double stop, double step, int num_points) {
         double alpha = 0.0;
         double[] mel_scale = generateMelScaleVector(fs, num_points);
@@ -27,6 +45,13 @@ public class JSPTKUtil
         return alpha;
     }
 
+    /**
+     *  Method to generate the mel scale vector based on the sample rate
+     *
+     *  @param fs the sample rate
+     *  @param the length of the produced vector
+     *  @return the mel scale vector
+     */
     public static double[] generateMelScaleVector(int fs, int length) {
         double step = (fs/2.0) / length;
         double fact = 1000.0 / Math.log(2);
@@ -43,6 +68,13 @@ public class JSPTKUtil
         return scale;
     }
 
+    /**
+     *  Method to generate the warping vector based on the sample rate
+     *
+     *  @param fs the sample rate
+     *  @param the length of the produced vector
+     *  @return the warping vector
+     */
     public static double[] generateWarpingVector(double alpha, int length) {
         double step = Math.PI / length;
         double omega, num, den, global_den = 0;
@@ -66,6 +98,13 @@ public class JSPTKUtil
         return warpfreq;
     }
 
+    /**
+     *  Method to compute the RMS distance between 2 vectors
+     *
+     *  @param ar1 a vector
+     *  @param ar2 a vector
+     *  @return the rms distance
+     */
     public static double computeRMS(double[] ar1, double[] ar2) {
 
         double rms = 0.0;
@@ -76,40 +115,4 @@ public class JSPTKUtil
 
         return rms;
     }
-// def mcepalpha(fs, start=0.0, stop=1.0, step=0.001, num_points=1000):
-//     """Compute appropriate frequency warping parameter given a sampling frequency
-//     It would be useful to determine alpha parameter in mel-cepstrum analysis.
-//     The code is traslated from https://bitbucket.org/happyalu/mcep_alpha_calc.
-//     Parameters
-//     ----------
-//     fs : int
-//         Sampling frequency
-//     start : float
-//         start value that will be passed to numpy.arange. Default is 0.0.
-//     stop : float
-//         stop value that will be passed to numpy.arange. Default is 1.0.
-//     step : float
-//         step value that will be passed to numpy.arange. Default is 0.001.
-//     num_points : int
-//         Number of points used in approximating mel-scale vectors in fixed-
-//         length.
-//     Returns
-//     -------
-//     alpha : float
-//         frequency warping paramter (offen denoted by alpha)
-//     See Also
-//     --------
-//     pysptk.sptk.mcep
-//     pysptk.sptk.mgcep
-//     """
-//     alpha_candidates = np.arange(start, stop, step)
-//     mel = _melscale_vector(fs, num_points)
-//     distances = [rms_distance(mel, _warping_vector(alpha, num_points)) for
-//                  alpha in alpha_candidates]
-//     return alpha_candidates[np.argmin(distances)]
-
-
-// def rms_distance(v1, v2):
-//     d = v1 - v2
-//     return np.sum(np.abs(d * d)) / len(v1)
 }
