@@ -1,8 +1,5 @@
 package jsptk;
 
-import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
-
 /**
  *
  *
@@ -10,15 +7,22 @@ import java.util.stream.IntStream;
  */
 public class JSPTKUtil
 {
-    public static double mcepalpha(int fs) {
-        return mcepalpha(fs, 0.0, 1.0, 0.001, 1000);
+    public static double getMCEPAlpha(int fs) {
+        return getMCEPAlpha(fs, 0.0, 1.0, 0.001, 1000);
     }
 
-    public static double mcepalpha(int fs, double start, double stop, double step, int num_points) {
+    public static double getMCEPAlpha(int fs, double start, double stop, double step, int num_points) {
         double alpha = 0.0;
-        DoubleStream alpha_candidates =  IntStream.rangeClosed(0, (int)((stop-start)/step)).mapToDouble(x -> x*step + start);
-        // double[] mel_scale = melscale_vector(fs, num_points);
-        // double[] warp_vector = warping_vector(alpha, num_points);
+        double[] mel_scale = generateMelScaleVector(fs, num_points);
+        double max = Double.POSITIVE_INFINITY;
+        for (double cur_alpha=start; cur_alpha<stop; cur_alpha+=step) {
+            double[] warp_vector = generateWarpingVector(cur_alpha, num_points);
+            double d = computeRMS(mel_scale, warp_vector);
+            if (max > d) {
+                alpha = cur_alpha;
+                max = d;
+            }
+        }
 
         return alpha;
     }
@@ -62,6 +66,16 @@ public class JSPTKUtil
         return warpfreq;
     }
 
+    public static double computeRMS(double[] ar1, double[] ar2) {
+
+        double rms = 0.0;
+        for (int i=0; i<ar1.length; i++) {
+            double d = ar1[i]-ar2[i];
+            rms += d*d/ar1.length;
+        }
+
+        return rms;
+    }
 // def mcepalpha(fs, start=0.0, stop=1.0, step=0.001, num_points=1000):
 //     """Compute appropriate frequency warping parameter given a sampling frequency
 //     It would be useful to determine alpha parameter in mel-cepstrum analysis.
@@ -93,22 +107,6 @@ public class JSPTKUtil
 //     distances = [rms_distance(mel, _warping_vector(alpha, num_points)) for
 //                  alpha in alpha_candidates]
 //     return alpha_candidates[np.argmin(distances)]
-
-
-// def _melscale_vector(fs, length):
-//     step = (fs / 2.0) / length
-//     melscalev = 1000.0 / np.log(2) * np.log(1 + step * np.arange(0, length) / 1000.0)
-//     return melscalev / melscalev[-1]
-
-
-// def _warping_vector(alpha, length):
-//     step = np.pi / length
-//     omega = step * np.arange(0, length)
-//     num = (1 - alpha * alpha) * np.sin(omega)
-//     den = (1 + alpha * alpha) * np.cos(omega) - 2 * alpha
-//     warpfreq = np.arctan(num / den)
-//     warpfreq[warpfreq < 0] += np.pi
-//     return warpfreq / warpfreq[-1]
 
 
 // def rms_distance(v1, v2):
