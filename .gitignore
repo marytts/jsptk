@@ -1,6 +1,5 @@
 #SWIG
 swig/
-src/main/java/jsptk/*.java
 
 # Gradle
 .gradle/
