@@ -1,5 +1,5 @@
 plugins {
-    id 'cpp'
+    id 'c'
     id "java"
     id 'maven-publish'
     id "net.tribe-seven.swig" version "0.1.1"
@@ -27,14 +27,14 @@ task generateSrc(type: SwigTask) {
 
     // FIXME
     verbose = true
-    enableCpp = true
+    // enableCpp = true
 
     // Pathes
     javaSourcesPath = file("$buildDir/generatedSrc/main/java/jsptk")
     source = new File("$projectDir/swig/sptk.i")
-    wrapperTargetFile = file("$buildDir/generatedSrc/main/cpp/sptk_wrap.cpp")
+    wrapperTargetFile = file("$buildDir/generatedSrc/main/c/sptk_wrap.c")
     ext {
-        sourceDir = layout.buildDirectory.dir('generatedSrc/main/cpp')
+        sourceDir = layout.buildDirectory.dir('generatedSrc/main/c')
         headerDir = layout.projectDirectory.dir('SPTK/include')
     }
 
@@ -60,31 +60,38 @@ model {
     components {
         sptk(NativeLibrarySpec) {
             sources {
-                generated(CppSourceSet) {
+                generated(CSourceSet) {
                     generatedBy tasks.generateSrc
                 }
 
-                cpp {
+                c {
                     source {
-                        srcDirs 'Sptk/src'
-                        include '*.cpp'
+                        srcDirs 'SPTK/'
+                        include '**/*.c'
+                        exclude "example/*.c"
+                        exclude "wavjoin/*"
+                        exclude "wavsplit/*"
+                        exclude {
+                            details ->  details.file.parentFile.parent.endsWith("bin") && (! details.file.name.startsWith("_"))
+                        }
                     }
                     exportedHeaders {
-                        srcDir 'Sptk/src'
-                        include 'sptk/*.h'
+                        srcDir 'SPTK/include'
                     }
                 }
             }
 
             binaries {
                 all {
-                    cppCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include"
+                    cCompiler.args '-DFORMAT="double"'
+                    cCompiler.args '-O2', '-Wall', '-fno-common', '-Wstrict-prototypes', '-Wno-unused-variable'
+                    cCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include"
                     switch (targetPlatform.operatingSystem) {
                         case { it.macOsX }:
-                            cppCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include/darwin"
+                            cCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include/darwin"
                             break
                         case { it.linux }:
-                            cppCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include/linux"
+                            cCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include/linux"
                             break
                     }
                 }
