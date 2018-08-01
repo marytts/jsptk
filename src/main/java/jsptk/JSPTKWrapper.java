@@ -1,5 +1,8 @@
 package jsptk;
 
+import java.io.IOException;
+
+import cz.adamh.utils.NativeUtils;
 import jsptk.Sptk;
 /**
  *
@@ -8,14 +11,31 @@ import jsptk.Sptk;
  */
 public class JSPTKWrapper
 {
-    public JSPTKWrapper()
-    {
+    /* Loading library part */
+    static {
+        String libResourceName;
+        String osName = System.getProperty("os.name");
+        switch (osName) {
+            case ("Mac OS X"):
+                libResourceName = "libsptk.dylib";
+                break;
+            case ("Linux"):
+                libResourceName = "libsptk.so";
+                break;
+            default:
+                throw new RuntimeException("Cannot load library for OS: " + osName);
+        }
+        try {
+            NativeUtils.loadLibraryFromJar("/" + libResourceName);
+        } catch (IOException e) {
+            e.printStackTrace(); // This is probably not the best way to handle exception :-)
+        }
     }
 
     /**********************************************************************
      *** Vector operations
      **********************************************************************/
-    public double[] c2acr(double[] c, int order, int fftlen) {
+    public static double[] c2acr(double[] c, int order, int fftlen) {
         SWIGTYPE_p_double c_sp = JSPTKWrapper.java2swig(c);
         SWIGTYPE_p_double r_sp = Sptk.new_double_array(order);
 
@@ -30,7 +50,7 @@ public class JSPTKWrapper
 
     }
 
-    public double[] freqt(double[] c, int order, double alpha) {
+    public static double[] freqt(double[] c, int order, double alpha) {
         SWIGTYPE_p_double c_sp = JSPTKWrapper.java2swig(c);
         SWIGTYPE_p_double c2_sp = Sptk.new_double_array(order);
 
@@ -46,7 +66,7 @@ public class JSPTKWrapper
 
 
 
-    public double[] mc2b(double[] mc, double alpha) {
+    public static double[] mc2b(double[] mc, double alpha) {
         SWIGTYPE_p_double mc_sp = JSPTKWrapper.java2swig(mc);
         SWIGTYPE_p_double b_sp = Sptk.new_double_array(mc.length);
 
@@ -61,7 +81,7 @@ public class JSPTKWrapper
     }
 
 
-    public double[] b2mc(double[] b, double alpha) {
+    public static double[] b2mc(double[] b, double alpha) {
         SWIGTYPE_p_double b_sp = JSPTKWrapper.java2swig(b);
         SWIGTYPE_p_double mc_sp = Sptk.new_double_array(b.length);
 
@@ -75,11 +95,22 @@ public class JSPTKWrapper
     }
 
 
+    public static double[] fftr(double[] c) {
+        SWIGTYPE_p_double sp_sp = Sptk.new_double_array(c.length*2);
+        SWIGTYPE_p_double c_sp = JSPTKWrapper.java2swig(c);
+
+        Sptk.fftr(c_sp, sp_sp, c.length);
+        double[] sp = JSPTKWrapper.swig2java(sp_sp, c.length*2);
+        JSPTKWrapper.clean(sp_sp);
+        JSPTKWrapper.clean(c_sp);
+
+        return sp;
+    }
 
     /**********************************************************************
      *** Vector operations
      **********************************************************************/
-    public double[][] c2acr(double[][] c, int order, int fftlen) {
+    public static double[][] c2acr(double[][] c, int order, int fftlen) {
         SWIGTYPE_p_p_double c_sp = JSPTKWrapper.java2swig(c);
         SWIGTYPE_p_double r_sp = Sptk.new_double_array(order);
         double[][] r = new double[c.length][order];
@@ -97,7 +128,7 @@ public class JSPTKWrapper
 
     }
 
-    public double[][] freqt(double[][] c, int order, double alpha) {
+    public static double[][] freqt(double[][] c, int order, double alpha) {
         SWIGTYPE_p_p_double c_sp = JSPTKWrapper.java2swig(c);
         SWIGTYPE_p_double c2_sp = Sptk.new_double_array(order);
         double[][] c2 = new double[c.length][order];
@@ -115,7 +146,7 @@ public class JSPTKWrapper
 
 
 
-    public double[][] mc2b(double[][] mc, double alpha) {
+    public static double[][] mc2b(double[][] mc, double alpha) {
         SWIGTYPE_p_p_double mc_sp = JSPTKWrapper.java2swig(mc);
         SWIGTYPE_p_double b_sp = Sptk.new_double_array(mc[0].length);
         double[][] b = new double[mc.length][mc[0].length];
@@ -133,7 +164,7 @@ public class JSPTKWrapper
     }
 
 
-    public double[][] b2mc(double[][] b, double alpha) {
+    public static double[][] b2mc(double[][] b, double alpha) {
         SWIGTYPE_p_p_double b_sp = JSPTKWrapper.java2swig(b);
         SWIGTYPE_p_double mc_sp = Sptk.new_double_array(b[0].length);
         double[][] mc = new double[b.length][b[0].length];
@@ -150,6 +181,23 @@ public class JSPTKWrapper
         return mc;
     }
 
+    public static double[][] fftr(double[][] c) {
+        SWIGTYPE_p_double sp_sp = Sptk.new_double_array(c[0].length*2);
+        SWIGTYPE_p_p_double c_sp = JSPTKWrapper.java2swig(c);
+        double[][] sp = new double[c.length][c[0].length*2];
+
+        // Convert c to
+        for (int t=0; t<c.length; t++) {
+
+            Sptk.fftr(Sptk.double_p_array_getitem(c_sp, t), sp_sp, c[0].length);
+            sp[t] = JSPTKWrapper.swig2java(sp_sp, sp[t].length);
+        }
+
+        JSPTKWrapper.clean(sp_sp);
+        JSPTKWrapper.clean(c_sp, c.length);
+
+        return sp;
+    }
 
     /**********************************************************************
      *** JNI Utilities
