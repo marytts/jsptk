@@ -119,9 +119,9 @@ model {
 /**********************************************************************************************
  ** Project meta + publishing part
  ***********************************************************************************************/
-version '0.5-SNAPSHOT'
+version '0.1-SNAPSHOT'
 group "de.dfki.mary"
-description "Artifact containing a wrapper for the Sptk vocoder"
+description "Artifact containing a wrapper for SPTK"
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allJava
