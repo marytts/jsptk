@@ -14,7 +14,6 @@ public class JSPTKWrapperTest {
     public static double[] providerMGC() throws Exception {
         URL url = JSPTKWrapperTest.class.getResource("/test.mgc");
         List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
-        System.out.println("okb");
         double[] mgc = new double[lines.size()];
         for (int i = 0; i < mgc.length; i++) {
             mgc[i] = Double.parseDouble(lines.get(i));
@@ -55,7 +54,20 @@ public class JSPTKWrapperTest {
         double[] test = JSPTKWrapper.freqt(mgc, 511, 0.55);
         Assert.assertEquals(test.length, ref.length);
         for (int i = 0; i<test.length; i++) {
-            Assert.assertEquals(ref[i], test[i], 0.000001);
+            Assert.assertEquals(test[i], ref[i], 0.000001);
+        }
+    }
+
+
+    // FIXME: proper provider should be used
+    @Test
+    public void TestFFTR() throws Exception{
+        double[] freqt = providerFREQT();
+        double[] ref = providerSP();
+        double[] test = JSPTKWrapper.fftr(freqt).real;
+        Assert.assertEquals(test.length, ref.length);
+        for (int i = 0; i<ref.length; i++) {
+            Assert.assertEquals(test[i], ref[i], 0.0001);
         }
     }
 

@@ -95,12 +95,17 @@ public class JSPTKWrapper
     }
 
 
-    public static double[] fftr(double[] c) {
-        SWIGTYPE_p_double sp_sp = Sptk.new_double_array(c.length*2);
+    public static ComplexVector fftr(double[] c) {
+        // Allocating memory
+        SWIGTYPE_p_double sp_sp = Sptk.new_double_array(c.length);
         SWIGTYPE_p_double c_sp = JSPTKWrapper.java2swig(c);
 
+        // Apply FFTR
         Sptk.fftr(c_sp, sp_sp, c.length);
-        double[] sp = JSPTKWrapper.swig2java(sp_sp, c.length*2);
+        ComplexVector sp = new ComplexVector(JSPTKWrapper.swig2java(c_sp, c.length),
+                                             JSPTKWrapper.swig2java(sp_sp, c.length));
+
+        // Clean memory
         JSPTKWrapper.clean(sp_sp);
         JSPTKWrapper.clean(c_sp);
 
@@ -226,7 +231,6 @@ public class JSPTKWrapper
         return res;
     }
 
-
     private static SWIGTYPE_p_double java2swig(double[] ar) {
         SWIGTYPE_p_double res = Sptk.new_double_array(ar.length);
 
@@ -235,7 +239,6 @@ public class JSPTKWrapper
 
         return res;
     }
-
 
     private static SWIGTYPE_p_p_double java2swig(double[][] ar) {
         SWIGTYPE_p_p_double res = Sptk.new_double_p_array(ar.length);
@@ -249,8 +252,6 @@ public class JSPTKWrapper
 
         return res;
     }
-
-
 
 
     private static void clean(SWIGTYPE_p_p_double ar, int length) {
