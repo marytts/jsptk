@@ -7,23 +7,11 @@ package jsptk;
  */
 public class JSPTKConversion
 {
-    private static double[] powerSpectrum(double[] spectrum) {
-        int size = spectrum.length/2;
-        double[] pow = new double[size];
-        for (int k = 0; k < size; k++)
-             pow[k] = spectrum[k] * spectrum[k] + spectrum[k+size] * spectrum[k+size];
 
-         return pow;
-    }
 
-    private static double[][] powerSpectrum(double[][] spectrum) {
-        int size = spectrum[0].length/2;
-        double[][] pow = new double[spectrum.length][size];
-        for (int t=0; t<spectrum.length; t++)
-            for (int k = 0; k < size; k++)
-                pow[t][k] = spectrum[t][k] * spectrum[t][k] + spectrum[t][k+size] * spectrum[t][k+size];
-
-         return pow;
+    public static double[] mc2sp(double[] mc, double alpha, int fftlen) {
+        double[][] mc_em = { mc };
+        return mc2sp(mc_em, alpha, fftlen)[0];
     }
 
     public static double[][] mc2sp(double[][] mc, double alpha, int fftlen) {
@@ -34,39 +22,23 @@ public class JSPTKConversion
         // Compute symetry
         double[][] c_sym = new double[mc.length][fftlen];
         for (int t=0; t<c.length; t++) {
-            for (int i=0; i<c[0].length; i++) {
+            c_sym[t][0] = c[t][0];
+            for (int i=1; i<c[0].length; i++) {
                 c_sym[t][i] = c[t][i];
-                c_sym[t][c.length-1-i] = c[t][i];
+                c_sym[t][c_sym[t].length-i] = c[t][i];
             }
         }
 
         // back to power spectrum
-        double[][] pow_spectrum = powerSpectrum(JSPTKWrapper.fftr(c_sym));
+        ComplexVector[] sp = JSPTKWrapper.fftr(c_sym);
+        double[][] pow_spectrum = new double[mc.length][sp[0].real.length/2+1];
 
         for (int t=0; t<pow_spectrum.length; t++) {
-            for (int i=0; i<pow_spectrum[0].length; i++) {
-                pow_spectrum[t][i] = Math.exp(pow_spectrum[t][i]);
+            for (int i=0; i<pow_spectrum[t].length; i++) { // FIXME: /2 is to be consistent with python code
+                pow_spectrum[t][i] = Math.exp(sp[t].real[i]);
             }
         }
-        return pow_spectrum;
-    }
 
-    public static double[] mc2sp(double[] mc, double alpha, int fftlen) {
-        double[] c = JSPTKWrapper.freqt(mc, fftlen/2, -alpha);
-        c[0] *= 2.0;
-
-        // Compute symetry
-        double[] c_sym = new double[fftlen];
-        for (int i=0; i<c.length; i++) {
-            c_sym[i] = c[i];
-            c_sym[c.length-1-i] = c[i];
-        }
-
-        // back to power spectrum
-        double[] pow_spectrum = powerSpectrum(JSPTKWrapper.fftr(c_sym));
-        for (int i=0; i<pow_spectrum.length; i++) {
-            pow_spectrum[i] = Math.exp(pow_spectrum[i]);
-        }
         return pow_spectrum;
     }
 }
