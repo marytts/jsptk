@@ -52,12 +52,12 @@ public class JSPTKWrapper
 
     public static double[] freqt(double[] c, int order, double alpha) {
         SWIGTYPE_p_double c_sp = JSPTKWrapper.java2swig(c);
-        SWIGTYPE_p_double c2_sp = Sptk.new_double_array(order);
+        SWIGTYPE_p_double c2_sp = Sptk.new_double_array(order+1);
 
-        // Convert c to
+        // Apply encapsulated function
         Sptk.freqt(c_sp, c.length, c2_sp, order, alpha);
 
-        double[] c2 = JSPTKWrapper.swig2java(c_sp, order);
+        double[] c2 = JSPTKWrapper.swig2java(c2_sp, order+1);
         JSPTKWrapper.clean(c_sp);
         JSPTKWrapper.clean(c2_sp);
 
@@ -129,15 +129,18 @@ public class JSPTKWrapper
     }
 
     public static double[][] freqt(double[][] c, int order, double alpha) {
+        // Wrap and prepare memory
         SWIGTYPE_p_p_double c_sp = JSPTKWrapper.java2swig(c);
-        SWIGTYPE_p_double c2_sp = Sptk.new_double_array(order);
-        double[][] c2 = new double[c.length][order];
+        SWIGTYPE_p_double c2_sp = Sptk.new_double_array(order+1);
+        double[][] c2 = new double[c.length][order+1];
 
-        // Convert c to
+        // Apply SPTK freqt
         for (int t=0; t<c.length; t++) {
             Sptk.freqt(Sptk.double_p_array_getitem(c_sp, t), c.length, c2_sp, order, alpha);
-            c2[t] = JSPTKWrapper.swig2java(c2_sp, order);
+            c2[t] = JSPTKWrapper.swig2java(c2_sp, order+1);
         }
+
+        //  Clean memory
         JSPTKWrapper.clean(c_sp, c.length);
         JSPTKWrapper.clean(c2_sp);
 
