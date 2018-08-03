@@ -69,14 +69,14 @@ public class JSPTKWrapper
      **********************************************************************/
     public static double[][] c2acr(double[][] c, int order, int fftlen) {
         SWIGTYPE_p_double c_sp = Sptk.new_double_array(c[0].length);
-        SWIGTYPE_p_double r_sp = Sptk.new_double_array(order);
+        SWIGTYPE_p_double r_sp = Sptk.new_double_array(order+1);
         double[][] r = new double[c.length][order];
 
         // Convert c to
         for (int t=0; t<c.length; t++) {
             copy(c[t], c_sp);
             Sptk.c2acr(c_sp, c.length, r_sp, order, fftlen);
-            r[t] = JSPTKWrapper.swig2java(r_sp, order);
+            r[t] = JSPTKWrapper.swig2java(r_sp, order+1);
         }
 
         JSPTKWrapper.clean(c_sp);
@@ -116,7 +116,7 @@ public class JSPTKWrapper
         // Convert c to
         for (int t=0; t<mc.length; t++) {
             copy(mc[t], mc_sp);
-            Sptk.mc2b(mc_sp, b_sp, mc.length, alpha);
+            Sptk.mc2b(mc_sp, b_sp, mc[t].length, alpha);
             b[t] = JSPTKWrapper.swig2java(b_sp, mc[t].length);
         }
 

@@ -14,6 +14,17 @@ import com.google.common.io.Resources;
 public class JSPTKProvider
 {
 
+    public static double[] providerB() throws Exception {
+        URL url = JSPTKWrapperTest.class.getResource("/test.b");
+        List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
+        double[] b = new double[lines.size()];
+        for (int i = 0; i < b.length; i++) {
+            b[i] = Double.parseDouble(lines.get(i));
+        }
+
+        return b;
+    }
+
     public static double[] providerMGC() throws Exception {
         URL url = JSPTKWrapperTest.class.getResource("/test.mgc");
         List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
