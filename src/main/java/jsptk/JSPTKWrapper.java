@@ -135,7 +135,7 @@ public class JSPTKWrapper
         // Convert c to
         for (int t=0; t<b.length; t++) {
             copy(b[t], b_sp);
-            Sptk.mc2b(b_sp, mc_sp, b.length, alpha);
+            Sptk.b2mc(b_sp, mc_sp, b[t].length, alpha);
             mc[t] = JSPTKWrapper.swig2java(mc_sp, b[t].length);
         }
 
