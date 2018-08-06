@@ -60,7 +60,17 @@ public class JSPTKProvider
         return sp;
     }
 
+    public static double[] providerPostFilteredMGC() throws Exception {
+        URL url = JSPTKWrapperTest.class.getResource("/test.postfilt");
+        List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
 
+        double[] sp = new double[lines.size()];
+        for (int i = 0; i < sp.length; i++) {
+            sp[i] = Double.parseDouble(lines.get(i));
+        }
+
+        return sp;
+    }
 
     public static double[] providerMC2SP() throws Exception {
         URL url = JSPTKWrapperTest.class.getResource("/test.mc2sp");
