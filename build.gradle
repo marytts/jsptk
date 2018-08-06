@@ -14,6 +14,8 @@ repositories {
 }
 
 dependencies {
+    testCompile group: 'org.ejml', name: 'ejml-all', version: '0.34'
+    testCompile group: 'org.assertj', name:'assertj-core', version: '3.10.0'
     testCompile group: 'org.testng', name: 'testng', version: '6.8.13'
     testCompile group: 'com.google.guava', name: 'guava', version: '18.0'
 }
