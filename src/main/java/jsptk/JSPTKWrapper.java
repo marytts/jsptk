@@ -116,7 +116,7 @@ public class JSPTKWrapper
         // Convert c to
         for (int t=0; t<mc.length; t++) {
             copy(mc[t], mc_sp);
-            Sptk.mc2b(mc_sp, b_sp, mc[t].length, alpha);
+            Sptk.mc2b(mc_sp, b_sp, mc[t].length-1, alpha);
             b[t] = JSPTKWrapper.swig2java(b_sp, mc[t].length);
         }
 
@@ -135,7 +135,7 @@ public class JSPTKWrapper
         // Convert c to
         for (int t=0; t<b.length; t++) {
             copy(b[t], b_sp);
-            Sptk.b2mc(b_sp, mc_sp, b[t].length, alpha);
+            Sptk.b2mc(b_sp, mc_sp, b[t].length-1, alpha);
             mc[t] = JSPTKWrapper.swig2java(mc_sp, b[t].length);
         }
 

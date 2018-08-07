@@ -29,7 +29,6 @@ public class JSPTKSynthesis
         // Init MGC matrix
         int D = c_ar[0].length;
         SimpleMatrix c = new SimpleMatrix(c_ar);
-        System.out.println(c);
 
         // Init the weights
         SimpleMatrix weights = new SimpleMatrix(c_ar.length, D);
@@ -46,14 +45,15 @@ public class JSPTKSynthesis
             new SimpleMatrix(JSPTKWrapper.c2acr(JSPTKWrapper.freqt(matrix2Array(c),
                                                                    min_phase_order, -alpha),
                                                 0, fftlen));
-
         // c_p_r0 = pysptk.c2acr(pysptk.freqt(c * weight, minimum_phase_order, -alpha), 0, fftlen).flatten()
         SimpleMatrix c_p_r0 =
             new SimpleMatrix(JSPTKWrapper.c2acr(JSPTKWrapper.freqt(cw, min_phase_order, -alpha),
                                                 0, fftlen));
 
+
         // c_b0 = pysptk.mc2b(weight * c, alpha)[:, 0]
-        SimpleMatrix c_b0 = (new SimpleMatrix(JSPTKWrapper.mc2b(cw, alpha))).extractVector(false, 0);
+        SimpleMatrix c_b0 = (new SimpleMatrix(JSPTKWrapper.mc2b(cw, alpha))); //.extractVector(false, 0);
+        c_b0 = c_b0.extractVector(false, 0);
 
         // c_p_b0 = np.log(c_r0 / c_p_r0) / 2 + c_b0
         SimpleMatrix c_p_b0 = new SimpleMatrix(cw.length, 1);
@@ -67,6 +67,8 @@ public class JSPTKSynthesis
             c_up[i][0] = c_p_b0.get(i, 0);
 
         // c_p_c = pysptk.b2mc(c_up, alpha)
-        return JSPTKWrapper.b2mc(c_up, alpha);
+        c_up = JSPTKWrapper.b2mc(c_up, alpha);
+
+        return c_up;
     }
 }

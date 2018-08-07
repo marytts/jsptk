@@ -36,6 +36,23 @@ public class JSPTKProvider
         return mgc;
     }
 
+
+    // FIXME: hardcoded nb of frames
+    public static double[][] providerMGCFull() throws Exception {
+        URL url = JSPTKWrapperTest.class.getResource("/test.mgc_full");
+        List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
+        int dim = lines.size()/341;
+
+        double[][] mgc = new double[341][dim];
+        System.out.println(mgc.length);
+        for (int i = 0; i<mgc.length; i++) {
+            for (int j=0; j<dim; j++)
+                mgc[i][j] = Double.parseDouble(lines.get(i*dim+j));
+        }
+
+        return mgc;
+    }
+
     public static double[] providerFREQT() throws Exception {
         URL url = JSPTKWrapperTest.class.getResource("/test.freqt");
         List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
