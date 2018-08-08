@@ -1,0 +1,36 @@
+# SCM part
+branches:
+  only:
+    - master
+
+# System part
+matrix:
+  include:
+    - os: linux
+      jdk: openjdk8
+    - os: osx
+
+# Java specific
+language: java
+
+# Installation
+addons:
+  apt:
+    packages:
+    - swig
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install swig; fi
+
+scripts:
+  ./gradlew b --info
+
+# Caching
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/Library/Caches/Homebrew
