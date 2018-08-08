@@ -73,8 +73,8 @@ model {
                         exclude "example/*.c"
                         exclude "wavjoin/*"
                         exclude "wavsplit/*"
-                        exclude {
-                            details ->  details.file.parentFile.parent.endsWith("bin") && (! details.file.name.startsWith("_"))
+                        exclude { details ->
+                            details.file.parentFile.parent.endsWith("bin") && details.file.name.endsWith(".c") && (! details.file.name.startsWith("_"))
                         }
                     }
                     exportedHeaders {
@@ -86,7 +86,7 @@ model {
             binaries {
                 all {
                     cCompiler.args '-DFORMAT="double"'
-                    cCompiler.args '-O2', '-Wall', '-fno-common', '-Wstrict-prototypes', '-Wno-unused-variable'
+                    cCompiler.args '-O2', '-Wall', '-fno-common', '-Wno-strict-aliasing', '-Wstrict-prototypes', '-Wno-unused-variable'
                     cCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include"
                     switch (targetPlatform.operatingSystem) {
                         case { it.macOsX }:
