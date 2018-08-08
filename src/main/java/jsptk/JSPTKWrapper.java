@@ -4,10 +4,14 @@ import java.io.IOException;
 
 import cz.adamh.utils.NativeUtils;
 import jsptk.Sptk;
+
 /**
+ *  The convinient wrapper class around JNI sptk class.
  *
+ *  The javadoc indicated function called + adaptation. However, for more information about the
+ *  actual function, please read the SPTK documentation.
  *
- * @author <a href="mailto:slemaguer@coli.uni-saarland.de">Sébastien Le Maguer</a>
+ *  @author <a href="mailto:slemaguer@coli.uni-saarland.de">Sébastien Le Maguer</a>
  */
 public class JSPTKWrapper
 {
@@ -35,29 +39,63 @@ public class JSPTKWrapper
     /**********************************************************************
      *** Vector operations
      **********************************************************************/
+    /**
+     *  The method to call c2acr on a vector of double
+     *
+     *  @param c the vector
+     *  @param order the needed order
+     *  @param fftlen the length of the fft
+     *  @return the autocorrelation vector of double
+     */
     public static double[] c2acr(double[] c, int order, int fftlen) {
         double[][] c_em = {c};
         return c2acr(c_em, order, fftlen)[0];
 
     }
 
+    /**
+     *  The method to call freqt on a vector of double
+     *
+     *  @param c the vector
+     *  @param order the needed order
+     *  @param alpha the all pass constant
+     *  @return the frequency transformed vector of double
+     */
     public static double[] freqt(double[] c, int order, double alpha) {
         double[][] c_em = {c};
         return freqt(c_em, order, alpha)[0];
     }
 
+    /**
+     *  The method to call mc2b on a vector of double
+     *
+     *  @param mc the MCC vector
+     *  @param alpha the all pass constant
+     *  @return the MLSA digital filter coefficients double vector
+     */
     public static double[] mc2b(double[] mc, double alpha) {
         double[][] mc_em = {mc};
         return mc2b(mc_em, alpha)[0];
     }
 
-
+    /**
+     *  The method to call b2mc on a vector of double
+     *
+     *  @param b the MLSA digital filter coefficients
+     *  @param alpha the all pass constant
+     *  @return the MCC
+     */
     public static double[] b2mc(double[] b, double alpha) {
         double[][] b_em = {b};
         return b2mc(b_em, alpha)[0];
     }
 
-
+    /**
+     *  The method to call fftr on a vector of double
+     *
+     *  @param c the double vector of real coefficients
+     *  @return a complex vector corresponding to the FFT results
+     */
     public static ComplexVector fftr(double[] c) {
         double[][] c_em = { c };
 
@@ -65,8 +103,16 @@ public class JSPTKWrapper
     }
 
     /**********************************************************************
-     *** Vector operations
+     *** Matrix operations
      **********************************************************************/
+    /**
+     *  The method to call c2acr on a matrix of double, result of a framed data
+     *
+     *  @param c the matrix
+     *  @param order the needed order
+     *  @param fftlen the length of the fft
+     *  @return the autocorrelation matrix of double
+     */
     public static double[][] c2acr(double[][] c, int order, int fftlen) {
         SWIGTYPE_p_double c_sp = Sptk.new_double_array(c[0].length);
         SWIGTYPE_p_double r_sp = Sptk.new_double_array(order+1);
@@ -86,6 +132,14 @@ public class JSPTKWrapper
 
     }
 
+    /**
+     *  The method to call freqt on a matrix of double, result of a framed data
+     *
+     *  @param c the matrix
+     *  @param order the needed order
+     *  @param alpha the all pass constant
+     *  @return the frequency transformed matrix of double
+     */
     public static double[][] freqt(double[][] c, int order, double alpha) {
         // Wrap and prepare memory
         SWIGTYPE_p_double c_sp = Sptk.new_double_array(c[0].length);
@@ -106,8 +160,13 @@ public class JSPTKWrapper
         return c2;
     }
 
-
-
+    /**
+     *  The method to call mc2b on a matrix of double, result of a framed data
+     *
+     *  @param mc the MCC matrix
+     *  @param alpha the all pass constant
+     *  @return the MLSA digital filter coefficients double matrix
+     */
     public static double[][] mc2b(double[][] mc, double alpha) {
         SWIGTYPE_p_double mc_sp = Sptk.new_double_array(mc[0].length);
         SWIGTYPE_p_double b_sp = Sptk.new_double_array(mc[0].length);
@@ -126,7 +185,13 @@ public class JSPTKWrapper
         return b;
     }
 
-
+    /**
+     *  The method to call b2mc on a matrix of double, result of a framed data
+     *
+     *  @param b the MLSA digital filter coefficients
+     *  @param alpha the all pass constant
+     *  @return the MCC
+     */
     public static double[][] b2mc(double[][] b, double alpha) {
         SWIGTYPE_p_double b_sp = Sptk.new_double_array(b[0].length);
         SWIGTYPE_p_double mc_sp = Sptk.new_double_array(b[0].length);
@@ -145,6 +210,12 @@ public class JSPTKWrapper
         return mc;
     }
 
+    /**
+     *  The method to call fftr on a matrix of double, result of a framed data
+     *
+     *  @param c the double matrix of real coefficients
+     *  @return a complex matrix corresponding to the FFT results
+     */
     public static ComplexVector[] fftr(double[][] c) {
 
         // Allocating memory
@@ -171,6 +242,15 @@ public class JSPTKWrapper
     /**********************************************************************
      *** JNI Utilities
      **********************************************************************/
+    /**
+     *  Util method to convert a swig array to a native double array in java
+     *
+     *  This method doesn't clean any memory !
+     *
+     *  @param ar the swig array
+     *  @param length the length of the array
+     *  @return the java native double array containing the values from the swig array
+     */
     private static double[] swig2java(SWIGTYPE_p_double ar, int length) {
         double[] res = new double[length];
 
@@ -180,6 +260,12 @@ public class JSPTKWrapper
         return res;
     }
 
+    /**
+     *  Utilitary method to generate a swig array from a java native double array
+     *
+     *  @param ar the double array
+     *  @return the swig array containing the values from the java native double array
+     */
     private static SWIGTYPE_p_double java2swig(double[] ar) {
         SWIGTYPE_p_double res = Sptk.new_double_array(ar.length);
 
@@ -189,11 +275,22 @@ public class JSPTKWrapper
         return res;
     }
 
-    private static void copy(double[] ar, SWIGTYPE_p_double dest) {
-        for (int i=0; i<ar.length; i++)
-            Sptk.double_array_setitem(dest, i, ar[i]);
+    /**
+     *  Method to copy the containing of the java native array into a preallocated swig array
+     *
+     *  @param src the java native array
+     *  @param dest the preallocated swig array
+     */
+    private static void copy(double[] src, SWIGTYPE_p_double dest) {
+        for (int i=0; i<src.length; i++)
+            Sptk.double_array_setitem(dest, i, src[i]);
     }
 
+    /**
+     *  Method to clear the memory of a swig double array
+     *
+     *  @param ar the swig array to free
+     */
     private static void clean(SWIGTYPE_p_double ar) {
         Sptk.delete_double_array(ar);
     }

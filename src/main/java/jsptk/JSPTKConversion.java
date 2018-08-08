@@ -1,19 +1,34 @@
 package jsptk;
 
 /**
+ *  Class which provides conversion helpers
  *
- *
- * @author <a href="mailto:slemaguer@coli.uni-saarland.de">Sébastien Le Maguer</a>
+ *  @author <a href="mailto:slemaguer@coli.uni-saarland.de">Sébastien Le Maguer</a>
  */
 public class JSPTKConversion
 {
 
-
+    /**
+     *  Method to convert MFCC vector to spectrum vector
+     *
+     *  @param mc the MFCC vector
+     *  @param alpha the all pass constant
+     *  @param fftlen the length of the FFT
+     *  @return the spectrum
+     */
     public static double[] mc2sp(double[] mc, double alpha, int fftlen) {
         double[][] mc_em = { mc };
         return mc2sp(mc_em, alpha, fftlen)[0];
     }
 
+    /**
+     *  Method to convert MFCC matrix (result of a framed data) to spectrum matrix
+     *
+     *  @param mc the MFCC vector
+     *  @param alpha the all pass constant
+     *  @param fftlen the length of the FFT
+     *  @return the spectrum
+     */
     public static double[][] mc2sp(double[][] mc, double alpha, int fftlen) {
         double[][] c = JSPTKWrapper.freqt(mc, fftlen/2, -alpha);
         for (int t=0; t<c.length; t++)

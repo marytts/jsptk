@@ -4,13 +4,21 @@ import org.ejml.equation.Equation;
 import org.ejml.simple.SimpleMatrix;
 
 /**
+ *  Class to provide helpers to achieve synthesis using SPTK
  *
- *
- * @author <a href="mailto:slemaguer@coli.uni-saarland.de">Sébastien Le Maguer</a>
+ *  @author <a href="mailto:slemaguer@coli.uni-saarland.de">Sébastien Le Maguer</a>
  */
 public class JSPTKSynthesis
 {
 
+    /**
+     *  Helper to convert a SimpleMatrix to a double array
+     *
+     *  FIXME: should find a better way using ejml directly !
+     *
+     *  @param m the SimpleMatrix
+     *  @return the double array
+     */
     protected static double[][] matrix2Array(SimpleMatrix m)   {
         int nr = m.numRows();
         int nc = m.numCols();
@@ -23,6 +31,16 @@ public class JSPTKSynthesis
     }
 
 
+    /**
+     *  A baseline postfilter example
+     *
+     *  @param c_ar the array of coefficients
+     *  @param min_phase_order the minimum phase order
+     *  @param fftlen the length of the FFT
+     *  @param coef the coef to weight the different values of c_ar
+     *  @param alpha the all pass constant
+     *  @return the post filtered matrix
+     */
     public static double[][] postfilter(double[][] c_ar, int min_phase_order, int fftlen, double coef, double alpha)
     {
 

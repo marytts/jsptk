@@ -1,6 +1,5 @@
 package jsptk;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
@@ -8,7 +7,10 @@ import org.testng.annotations.Test;
 
 public class JSPTKPostFilterTest {
 
-    // FIXME: proper provider should be used
+    /**
+     *  Baseline postfilter test
+     *
+     */
     @Test
     public void testPostFilter() throws Exception{
         double[][] mgc = {JSPTKProvider.providerMGC()};
@@ -26,6 +28,10 @@ public class JSPTKPostFilterTest {
     }
 
 
+    /**
+     *  Memory test
+     *
+     */
     @Test
     public void testPostFilterFullRunning() throws Exception{
         double[][] mgc = JSPTKProvider.providerMGCFull();
