@@ -8,3 +8,10 @@ bin/
 .classpath
 .project
 .settings/
+
+# IDEA
+.idea/
+*.iml
+
+# OSX
+.DS_Store
