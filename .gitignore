@@ -4,6 +4,7 @@ swig/
 # Gradle
 .gradle/
 build/
+bin/
 
 # Emacs
 .meghanada/
