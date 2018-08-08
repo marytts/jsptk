@@ -44,7 +44,6 @@ public class JSPTKProvider
         int dim = lines.size()/341;
 
         double[][] mgc = new double[341][dim];
-        System.out.println(mgc.length);
         for (int i = 0; i<mgc.length; i++) {
             for (int j=0; j<dim; j++)
                 mgc[i][j] = Double.parseDouble(lines.get(i*dim+j));

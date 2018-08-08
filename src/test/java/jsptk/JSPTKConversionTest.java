@@ -12,9 +12,8 @@ public class JSPTKConversionTest {
 
         double[] test = JSPTKConversion.mc2sp(mgc, 0.55, 512);
 
-        //Assert.assertEquals(test.length, ref.length);
+        Assert.assertEquals(test.length, ref.length);
         for (int i = 0; i<test.length; i++) {
-            System.out.println(test[i]);
             Assert.assertEquals(test[i], ref[i], 0.000001);
         }
     }
