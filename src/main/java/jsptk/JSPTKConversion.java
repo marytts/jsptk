@@ -49,7 +49,7 @@ public class JSPTKConversion
         double[][] pow_spectrum = new double[mc.length][sp[0].real.length/2+1];
 
         for (int t=0; t<pow_spectrum.length; t++) {
-            for (int i=0; i<pow_spectrum[t].length; i++) { // FIXME: /2 is to be consistent with python code
+            for (int i=0; i<pow_spectrum[t].length; i++) {
                 pow_spectrum[t][i] = Math.exp(sp[t].real[i]);
             }
         }
