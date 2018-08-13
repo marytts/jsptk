@@ -85,8 +85,7 @@ model {
 
             binaries {
                 all {
-                    cCompiler.args '-g'
-                    cCompiler.args '-O3', '-Wall', '-fno-common', '-Wstrict-prototypes', '-ansi'
+                    cCompiler.args '-O3', '-Wall', '-fno-common', '-Wstrict-prototypes'// , '-ansi'
                     cCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include"
                     switch (targetPlatform.operatingSystem) {
                         case { it.macOsX }:
