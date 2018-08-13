@@ -149,7 +149,7 @@ public class JSPTKWrapper
         // Apply SPTK freqt
         for (int t=0; t<c.length; t++) {
             copy(c[t], c_sp);
-            Sptk.freqt(c_sp, c[0].length, c2_sp, order, alpha);
+            Sptk.freqt(c_sp, c[0].length-1, c2_sp, order, alpha);
             c2[t] = JSPTKWrapper.swig2java(c2_sp, order+1);
         }
 
