@@ -120,7 +120,7 @@ model {
 /**********************************************************************************************
  ** Project meta + publishing part
  ***********************************************************************************************/
-version '0.1-SNAPSHOT'
+version '0.1'
 group "de.dfki.mary"
 description "Artifact containing a wrapper for SPTK"
 
@@ -143,7 +143,7 @@ publishing {
             url "$rootProject.buildDir/repo"
         }
         maven {
-            url version.endsWith('-SNAPSHOT') ? 'https://oss.jfrog.org/artifactory/oss-snapshot-local' : ''
+            url version.endsWith('-SNAPSHOT') ? 'https://oss.jfrog.org/artifactory/oss-snapshot-local' : 'https://api.bintray.com/maven/marytts/marytts/jsptk'
             credentials {
                 username = findProperty('bintrayUser')
                 password = findProperty('bintrayApiKey')
