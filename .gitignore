@@ -1,12 +1,17 @@
-#SWIG
-swig/
-
 # Gradle
 .gradle/
 build/
+bin/
 
 # Emacs
 .meghanada/
 .classpath
 .project
 .settings/
+
+# IDEA
+.idea/
+*.iml
+
+# OSX
+.DS_Store

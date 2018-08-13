@@ -14,6 +14,8 @@ repositories {
 }
 
 dependencies {
+    compile group: 'org.ejml', name: 'ejml-all', version: '0.34'
+    testCompile group: 'org.assertj', name:'assertj-core', version: '3.10.0'
     testCompile group: 'org.testng', name: 'testng', version: '6.8.13'
     testCompile group: 'com.google.guava', name: 'guava', version: '18.0'
 }
@@ -71,8 +73,8 @@ model {
                         exclude "example/*.c"
                         exclude "wavjoin/*"
                         exclude "wavsplit/*"
-                        exclude {
-                            details ->  details.file.parentFile.parent.endsWith("bin") && (! details.file.name.startsWith("_"))
+                        exclude { details ->
+                            details.file.parentFile.parent.endsWith("bin") && details.file.name.endsWith(".c") && (! details.file.name.startsWith("_"))
                         }
                     }
                     exportedHeaders {
@@ -83,8 +85,7 @@ model {
 
             binaries {
                 all {
-                    cCompiler.args '-DFORMAT="double"'
-                    cCompiler.args '-O2', '-Wall', '-fno-common', '-Wstrict-prototypes', '-Wno-unused-variable'
+                    cCompiler.args '-O3', '-Wall', '-fno-common', '-Wstrict-prototypes'// , '-ansi'
                     cCompiler.args '-I', "${org.gradle.internal.jvm.Jvm.current().javaHome}/include"
                     switch (targetPlatform.operatingSystem) {
                         case { it.macOsX }:
@@ -119,7 +120,7 @@ model {
 /**********************************************************************************************
  ** Project meta + publishing part
  ***********************************************************************************************/
-version '0.1-SNAPSHOT'
+version '0.2-SNAPSHOT'
 group "de.dfki.mary"
 description "Artifact containing a wrapper for SPTK"
 
@@ -138,10 +139,11 @@ publishing {
     }
     repositories {
         maven {
+            name 'projectLocal'
             url "$rootProject.buildDir/repo"
         }
         maven {
-            url version.endsWith('-SNAPSHOT') ? 'https://oss.jfrog.org/artifactory/oss-snapshot-local' : ''
+            url version.endsWith('-SNAPSHOT') ? 'https://oss.jfrog.org/artifactory/oss-snapshot-local' : 'https://api.bintray.com/maven/marytts/marytts/jsptk'
             credentials {
                 username = findProperty('bintrayUser')
                 password = findProperty('bintrayApiKey')
