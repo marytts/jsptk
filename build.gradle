@@ -139,6 +139,7 @@ publishing {
     }
     repositories {
         maven {
+            name 'projectLocal'
             url "$rootProject.buildDir/repo"
         }
         maven {
