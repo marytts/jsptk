@@ -91,6 +91,29 @@ public class JSPTKWrapper
     }
 
     /**
+     *  The method to call mcep on a vector of double
+     *
+     *  @param x the input sequence as a vector
+     *  @param order order of the mel cepstrum
+     *  @param alpha frequency warping coefficient
+     *  @param itr1 minimum number of iteration
+     *  @param itr2 maximum number of iteration
+     *  @param dd end condition
+     *  @param etype type of use for parameter e (0: not used, 1: initial value for the log-periodogram, 2: floor periodogram in dB)
+     *  @param e initial value or floor (see etype) for periodogram
+     *  @param f mimimum value of the determinant of the normal matrix
+     *  @param itype; the input type format
+     *  @return the vector of mel cepstrum coefficients
+     */
+    public static double[] mcep(double[] x,  int order,
+                                  double alpha, int itr1, int itr2,
+                                  double dd, int etype, double e,
+                                  double f, int itype) throws Exception {
+        double[][] x_em = {x};
+        return mcep(x_em, order, alpha, itr1, itr2, dd, etype, e, f, itype)[0];
+    }
+
+    /**
      *  The method to call fftr on a vector of double
      *
      *  @param c the double vector of real coefficients
@@ -205,6 +228,58 @@ public class JSPTKWrapper
         }
 
         JSPTKWrapper.clean(b_sp);
+        JSPTKWrapper.clean(mc_sp);
+
+        return mc;
+    }
+
+    /**
+     *  Call mcep on a matrix
+     *
+     *  @param x the input sequence as a matrix
+     *  @param orderl order of the mel cepstrum
+     *  @param alpha frequency warping coefficient
+     *  @param itr1 minimum number of iteration
+     *  @param itr2 maximum number of iteration
+     *  @param dd end condition
+     *  @param etype type of use for parameter e (0: not used, 1: initial value for the log-periodogram, 2: floor periodogram in dB)
+     *  @param e initial value or floor (see etype) for periodogram
+     *  @param f mimimum value of the determinant of the normal matrix
+     *  @param itype; the input type format
+     *  @return the matrix of mel cepstrum coefficients per frame
+     */
+    public static double[][] mcep(double[][] x, int order,
+                                  double alpha, int itr1, int itr2,
+                                  double dd, int etype, double e,
+                                  double f, int itype) throws Exception {
+
+        // Prepare swig conversion
+        SWIGTYPE_p_double x_sp = Sptk.new_double_array(x[0].length);
+        SWIGTYPE_p_double mc_sp = Sptk.new_double_array(x[0].length);
+        double[][] mc = new double[x.length][order+1];
+
+        // Generate mel-ceptrum for each frame
+        for (int t=0; t<x.length; t++) {
+            copy(x[t], x_sp);
+            int ret_val = Sptk.mcep(x_sp, x[t].length, mc_sp, order, alpha, itr1, itr2, dd, etype, e, f, itype);
+
+            // Check that there is no problem
+            switch (ret_val) {
+            case 1:
+                throw new Exception("invalid etype has been given: " + etype);
+            case 2:
+                throw new Exception("invalid itype has been given: " + itype);
+            case 3:
+                throw new Exception("failed to compute mel-cepstrum");
+            case 4:
+                throw new Exception("zero(s) are found in the periodogram");
+
+            }
+
+            mc[t] = JSPTKWrapper.swig2java(mc_sp, order+1);
+        }
+
+        JSPTKWrapper.clean(x_sp);
         JSPTKWrapper.clean(mc_sp);
 
         return mc;

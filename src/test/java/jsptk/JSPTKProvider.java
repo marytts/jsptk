@@ -76,6 +76,18 @@ public class JSPTKProvider
         return sp;
     }
 
+    public static double[] providerMCEP() throws Exception {
+        URL url = JSPTKWrapperTest.class.getResource("/test.mcep");
+        List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
+
+        double[] mcep = new double[lines.size()];
+        for (int i = 0; i < mcep.length; i++) {
+            mcep[i] = Double.parseDouble(lines.get(i));
+        }
+
+        return mcep;
+    }
+
     public static double[] providerPostFilteredMGC() throws Exception {
         URL url = JSPTKWrapperTest.class.getResource("/test.postfilt");
         List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
