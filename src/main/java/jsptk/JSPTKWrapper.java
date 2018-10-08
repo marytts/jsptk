@@ -261,7 +261,11 @@ public class JSPTKWrapper
         // Generate mel-ceptrum for each frame
         for (int t=0; t<x.length; t++) {
             copy(x[t], x_sp);
-            int ret_val = Sptk.mcep(x_sp, x[t].length, mc_sp, order, alpha, itr1, itr2, dd, etype, e, f, itype);
+            int flng = x[t].length;
+            if (itype != 0)
+                flng = (x[t].length-1) * 2;
+
+            int ret_val = Sptk.mcep(x_sp, flng, mc_sp, order, alpha, itr1, itr2, dd, etype, e, f, itype);
 
             // Check that there is no problem
             switch (ret_val) {
