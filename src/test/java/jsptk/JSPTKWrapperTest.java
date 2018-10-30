@@ -47,4 +47,33 @@ public class JSPTKWrapperTest {
         assertThat(test).containsExactly(ref, within(1e-4));
     }
 
+    @Test
+    public void testFrame() throws Exception {
+        // Providing data
+        double[] x = JSPTKProvider.providerRAWSignal();
+        double[][] ref = JSPTKProvider.providerFramedSignal();
+
+        // Run operation
+        double[][] test = JSPTKWrapper.frame(x, 1200, 240, false);
+
+        // Assertion
+        assertThat(test.length).isEqualTo(ref.length);
+        for (int t=0; t<test.length; t++)
+            assertThat(test[t]).containsExactly(ref[t], within(1e-4));
+    }
+
+    @Test
+    public void testWindow() throws Exception {
+        // Providing data
+        double[][] framed = JSPTKProvider.providerFramedSignal();
+        double[][] ref = JSPTKProvider.providerWindowedSignal();
+
+        // Run operation
+        double[][] test = JSPTKWrapper.window(framed, 2048, 1, Window.swigToEnum(1));
+
+        // Assertion
+        assertThat(test.length).isEqualTo(ref.length);
+        for (int t=0; t<test.length; t++)
+            assertThat(test[t]).containsExactly(ref[t], within(1e-4));
+    }
 }

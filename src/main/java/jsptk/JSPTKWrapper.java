@@ -3,7 +3,6 @@ package jsptk;
 import java.io.IOException;
 
 import cz.adamh.utils.NativeUtils;
-import jsptk.Sptk;
 
 /**
  *  The convinient wrapper class around JNI sptk class.
@@ -34,6 +33,64 @@ public class JSPTKWrapper
         } catch (IOException e) {
             e.printStackTrace(); // This is probably not the best way to handle exception :-)
         }
+    }
+
+
+    /**********************************************************************
+     *** Signal preparation methods
+     **********************************************************************/
+    /**
+     *  Framing method.
+     *
+     *  @param x the signal to frame
+     *  @param frame_length the length of the frame
+     *  @param frame_shift the shift between 2 frames in the signal
+     *  @param not_centered deactivated for now
+     *  @return the framed signal
+     *  FIXME: default is centered for now !
+     */
+    public static double[][] frame(double[] x, int frame_length, int frame_shift, boolean not_centered) {
+        int nb_frames = (x.length + frame_shift - 1) / frame_shift;
+        double[][] framed_data = new double[nb_frames][frame_length];
+
+        for (int f=0; f<nb_frames; f++) {
+            int start = f*frame_shift - frame_length / 2;
+            for (int l=0; l<frame_length; l++) {
+                int i = start + l;
+                if ((i<0) || (i>=x.length)) {
+                    framed_data[f][l] = 0;
+                } else {
+                    framed_data[f][l] = x[i];
+                }
+            }
+        }
+        return framed_data;
+    }
+
+
+    /**
+     *  Windowing method
+     *
+     *  @param framed_signal the framed signal
+     *  @param new_frame_length the output frame length
+     *  @param norm_type the normalisation type
+     *  @param win_type the window type
+     *  @return the windowed data
+     */
+    public static double[][] window(double[][] framed_signal, int new_frame_length, int norm_type, Window win_type) {
+        SWIGTYPE_p_double x_sp = Sptk.new_double_array(new_frame_length);
+        double[][] windowed_signal = new double[framed_signal.length][framed_signal[0].length];
+
+        // Convert c to
+        for (int t=0; t<framed_signal.length; t++) {
+            copy(framed_signal[t], x_sp);
+            Sptk.window(win_type, x_sp, framed_signal[t].length, norm_type);
+            windowed_signal[t] = JSPTKWrapper.swig2java(x_sp, new_frame_length);
+        }
+
+        JSPTKWrapper.clean(x_sp);
+
+        return windowed_signal;
     }
 
     /**********************************************************************
@@ -124,6 +181,7 @@ public class JSPTKWrapper
 
         return fftr(c_em)[0];
     }
+
 
     /**********************************************************************
      *** Matrix operations
