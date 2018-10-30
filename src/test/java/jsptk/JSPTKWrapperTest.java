@@ -76,4 +76,19 @@ public class JSPTKWrapperTest {
         for (int t=0; t<test.length; t++)
             assertThat(test[t]).containsExactly(ref[t], within(1e-4));
     }
+
+    @Test
+    public void testMGCEP() throws Exception {
+        // Providing data
+        double[][] windowed = JSPTKProvider.providerWindowedSignal();
+        double[][] ref = JSPTKProvider.providerMGCFromWindowedSignal();
+
+        // Run operation
+        double[][] test = JSPTKWrapper.mgcepDefaultWav(windowed, 34, 0.55, 1.0E-08);
+
+        // Assertion
+        assertThat(test.length).isEqualTo(ref.length);
+        for (int t=0; t<test.length; t++)
+            assertThat(test[t]).containsExactly(ref[t], within(1e-4));
+    }
 }

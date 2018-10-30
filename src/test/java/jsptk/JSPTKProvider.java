@@ -159,4 +159,20 @@ public class JSPTKProvider
 
         return windowed;
     }
+
+
+
+    public static double[][] providerMGCFromWindowedSignal() throws Exception {
+
+        byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.mgc"));
+        ByteBuffer buf = ByteBuffer.wrap(b_arr);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        double[][] mgc = new double[432][35]; // FIXME: 35 = order (34) + 1
+        for (int t = 0; t<mgc.length; t++) {
+            for (int d=0; d<mgc[0].length; d++)
+                mgc[t][d] = (double) buf.getFloat();
+        }
+
+        return mgc;
+    }
 }
