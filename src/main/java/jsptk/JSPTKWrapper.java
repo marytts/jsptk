@@ -3,7 +3,6 @@ package jsptk;
 import java.io.IOException;
 
 import cz.adamh.utils.NativeUtils;
-import jsptk.Sptk;
 
 /**
  *  The convinient wrapper class around JNI sptk class.
@@ -34,6 +33,64 @@ public class JSPTKWrapper
         } catch (IOException e) {
             e.printStackTrace(); // This is probably not the best way to handle exception :-)
         }
+    }
+
+
+    /**********************************************************************
+     *** Signal preparation methods
+     **********************************************************************/
+    /**
+     *  Framing method.
+     *
+     *  @param x the signal to frame
+     *  @param frame_length the length of the frame
+     *  @param frame_shift the shift between 2 frames in the signal
+     *  @param not_centered deactivated for now
+     *  @return the framed signal
+     *  FIXME: default is centered for now !
+     */
+    public static double[][] frame(double[] x, int frame_length, int frame_shift, boolean not_centered) {
+        int nb_frames = (x.length + frame_shift - 1) / frame_shift;
+        double[][] framed_data = new double[nb_frames][frame_length];
+
+        for (int f=0; f<nb_frames; f++) {
+            int start = f*frame_shift - frame_length / 2;
+            for (int l=0; l<frame_length; l++) {
+                int i = start + l;
+                if ((i<0) || (i>=x.length)) {
+                    framed_data[f][l] = 0;
+                } else {
+                    framed_data[f][l] = x[i];
+                }
+            }
+        }
+        return framed_data;
+    }
+
+
+    /**
+     *  Windowing method
+     *
+     *  @param framed_signal the framed signal
+     *  @param new_frame_length the output frame length
+     *  @param norm_type the normalisation type
+     *  @param win_type the window type
+     *  @return the windowed data
+     */
+    public static double[][] window(double[][] framed_signal, int new_frame_length, int norm_type, Window win_type) {
+        SWIGTYPE_p_double x_sp = Sptk.new_double_array(new_frame_length);
+        double[][] windowed_signal = new double[framed_signal.length][framed_signal[0].length];
+
+        // Convert c to
+        for (int t=0; t<framed_signal.length; t++) {
+            copy(framed_signal[t], x_sp);
+            Sptk.window(win_type, x_sp, framed_signal[t].length, norm_type);
+            windowed_signal[t] = JSPTKWrapper.swig2java(x_sp, new_frame_length);
+        }
+
+        JSPTKWrapper.clean(x_sp);
+
+        return windowed_signal;
     }
 
     /**********************************************************************
@@ -91,6 +148,29 @@ public class JSPTKWrapper
     }
 
     /**
+     *  The method to call mcep on a vector of double
+     *
+     *  @param x the input sequence as a vector
+     *  @param order order of the mel cepstrum
+     *  @param alpha frequency warping coefficient
+     *  @param itr1 minimum number of iteration
+     *  @param itr2 maximum number of iteration
+     *  @param dd end condition
+     *  @param etype type of use for parameter e (0: not used, 1: initial value for the log-periodogram, 2: floor periodogram in dB)
+     *  @param e initial value or floor (see etype) for periodogram
+     *  @param f mimimum value of the determinant of the normal matrix
+     *  @param itype; the input type format
+     *  @return the vector of mel cepstrum coefficients
+     */
+    public static double[] mcep(double[] x,  int order,
+                                  double alpha, int itr1, int itr2,
+                                  double dd, int etype, double e,
+                                  double f, int itype) throws Exception {
+        double[][] x_em = {x};
+        return mcep(x_em, order, alpha, itr1, itr2, dd, etype, e, f, itype)[0];
+    }
+
+    /**
      *  The method to call fftr on a vector of double
      *
      *  @param c the double vector of real coefficients
@@ -101,6 +181,7 @@ public class JSPTKWrapper
 
         return fftr(c_em)[0];
     }
+
 
     /**********************************************************************
      *** Matrix operations
@@ -206,6 +287,157 @@ public class JSPTKWrapper
 
         JSPTKWrapper.clean(b_sp);
         JSPTKWrapper.clean(mc_sp);
+
+        return mc;
+    }
+
+    /**
+     *  Call mcep on a matrix
+     *
+     *  @param x the input sequence as a matrix
+     *  @param orderl order of the mel cepstrum
+     *  @param alpha frequency warping coefficient
+     *  @param itr1 minimum number of iteration
+     *  @param itr2 maximum number of iteration
+     *  @param dd end condition
+     *  @param etype type of use for parameter e (0: not used, 1: initial value for the log-periodogram, 2: floor periodogram in dB)
+     *  @param e initial value or floor (see etype) for periodogram
+     *  @param f mimimum value of the determinant of the normal matrix
+     *  @param itype; the input type format
+     *  @return the matrix of mel cepstrum coefficients per frame
+     */
+    public static double[][] mcep(double[][] x, int order,
+                                  double alpha, int itr1, int itr2,
+                                  double dd, int etype, double e,
+                                  double f, int itype) throws Exception {
+
+        // Prepare swig conversion
+        SWIGTYPE_p_double x_sp = Sptk.new_double_array(x[0].length);
+        SWIGTYPE_p_double mc_sp = Sptk.new_double_array(x[0].length);
+        double[][] mc = new double[x.length][order+1];
+
+        // Generate mel-ceptrum for each frame
+        for (int t=0; t<x.length; t++) {
+            copy(x[t], x_sp);
+            int flng = x[t].length;
+            if (itype != 0)
+                flng = (x[t].length-1) * 2;
+
+            int ret_val = Sptk.mcep(x_sp, flng, mc_sp, order, alpha, itr1, itr2, dd, etype, e, f, itype);
+
+            // Check that there is no problem
+            switch (ret_val) {
+            case 1:
+                throw new Exception("invalid etype has been given: " + etype);
+            case 2:
+                throw new Exception("invalid itype has been given: " + itype);
+            case 3:
+                throw new Exception("failed to compute mel-cepstrum");
+            case 4:
+                throw new Exception("zero(s) are found in the periodogram");
+
+            }
+
+            mc[t] = JSPTKWrapper.swig2java(mc_sp, order+1);
+        }
+
+        JSPTKWrapper.clean(x_sp);
+        JSPTKWrapper.clean(mc_sp);
+
+        return mc;
+    }
+
+
+    /**
+     *  Call mgcep on a matrix coming from a windowed signal and using some default parameters
+     *
+     *  @param x the signal windowed
+     *  @param order the order of the mel-generalized cepstrum
+     *  @param alpha the alpha value
+     *  @param per_err small value added to the periodogram
+     *  @return mgcep(x, order, alpha, 0, 0, 0, 0, 2, 30, 0.001, -1, per_err, 0, 0.000001);
+     */
+    public static double[][] mgcepDefaultWav(double[][] x, int order, double alpha, double per_err) throws Exception {
+        return mgcep(x, order, alpha, 0, 0, 0, 0, 2, 30, 0.001, -1, per_err, 0, 0.000001);
+    }
+
+    /**
+     *  Call mgcep on a matrix coming from a windowed signal.
+     *
+     *  @param x the signal windowed
+     *  @param order the order of the mel-generalized cepstrum
+     *  @param alpha the alpha value
+     *  @param gamma the gamma value
+     *  @param c FIXME?
+     *  @param in_format the input format
+     *  @param out_format the output format
+     *  @param it_min the minimum iteration
+     *  @param it_max the maximum iteration
+     *  @param end_cond the end condition
+     *  @param rec_order the order of the recursions
+     *  @param per_err small value added to the periodogram
+     *  @param floor floor in db calculated per frame (FIXME: not used for now)
+     *  @param min_det minimum value of the determinant
+     *  @return the matrix of mel cepstrum coefficients per frame
+     */
+    public static double[][] mgcep(double[][] x,int order, double alpha, double gamma,
+                                   int c, int in_format, int out_format, int it_min, int it_max,
+                                   double end_cond, int rec_order, double per_err, double floor, double min_det)
+        throws Exception {
+
+        int etype = 1; // FIXME: check that
+        // Some variable adaptation
+        if (rec_order == -1) {
+            rec_order = x[0].length - 1;
+        }
+
+        int ilng = x[0].length;
+        if (in_format != 0) {
+            ilng = ilng/2 + 1;
+        }
+
+        // Prepare Memory
+        SWIGTYPE_p_double x_sp = Sptk.new_double_array(x[0].length);
+        SWIGTYPE_p_double b_sp = Sptk.new_double_array(2*(order+1));
+        double[][] mc = new double[x.length][order+1];
+
+        // Generate mel-ceptrum for each frame
+        for (int t=0; t<x.length; t++) {
+            // copy memory
+            copy(x[t], x_sp);
+
+            // Call mgcep
+            Sptk.mgcep(x_sp, x[t].length, b_sp, order, alpha, gamma,
+                       rec_order, it_min, it_max, end_cond,
+                       etype, per_err, min_det, in_format);
+
+            // Adapt output
+            if  ((out_format == 0) || (out_format == 1) || (out_format == 2) ||  (out_format == 4)) {
+                Sptk.ignorm(b_sp, b_sp, order, gamma);
+            }
+
+            if  ((out_format == 0) || (out_format == 2) || (out_format == 4)) {
+                if (alpha != 0.0)
+                    Sptk.b2mc(b_sp, b_sp, order, alpha);
+            }
+
+            if  ((out_format == 2) || (out_format == 4)) {
+                Sptk.gnorm(b_sp, b_sp, order, gamma);
+            }
+
+            // Transform array back to java
+            mc[t] = JSPTKWrapper.swig2java(b_sp, order+1);
+
+            // Final adaptation
+            if  ((out_format == 4) || (out_format == 5)) {
+                for (int i=order; i>0; i--)
+                    mc[t][i] *= gamma;
+            }
+
+        }
+
+        JSPTKWrapper.clean(x_sp);
+        JSPTKWrapper.clean(b_sp);
 
         return mc;
     }

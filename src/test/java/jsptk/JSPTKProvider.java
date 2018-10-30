@@ -1,10 +1,13 @@
 package jsptk;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import com.google.common.io.Resources;
+import com.google.common.io.ByteStreams;
 
 /**
  *
@@ -76,6 +79,18 @@ public class JSPTKProvider
         return sp;
     }
 
+    public static double[] providerMCEP() throws Exception {
+        URL url = JSPTKWrapperTest.class.getResource("/test.mcep");
+        List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
+
+        double[] mcep = new double[lines.size()];
+        for (int i = 0; i < mcep.length; i++) {
+            mcep[i] = Double.parseDouble(lines.get(i));
+        }
+
+        return mcep;
+    }
+
     public static double[] providerPostFilteredMGC() throws Exception {
         URL url = JSPTKWrapperTest.class.getResource("/test.postfilt");
         List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
@@ -98,5 +113,66 @@ public class JSPTKProvider
         }
 
         return sp;
+    }
+
+    public static double[] providerRAWSignal() throws Exception {
+
+        byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.raw"));
+        ByteBuffer buf = ByteBuffer.wrap(b_arr);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+
+        double[] raw = new double[103680]; // NOTE: hardcoded got from x2x +sa cmu_us_arctic_slt_b0535.raw | wc -l
+        for (int i = 0; i < raw.length; i++) {
+            raw[i] = (double) buf.getShort();
+        }
+
+        return raw;
+    }
+
+
+
+    public static double[][] providerFramedSignal() throws Exception {
+
+        byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.framed"));
+        ByteBuffer buf = ByteBuffer.wrap(b_arr);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        double[][] framed = new double[432][1200]; // NOTE: 1200 = frame length used, frameshift = 240 => 432 frames
+        for (int t = 0; t<framed.length; t++) {
+            for (int d=0; d<framed[0].length; d++)
+                framed[t][d] = (double) buf.getFloat();
+        }
+
+        return framed;
+    }
+
+
+    public static double[][] providerWindowedSignal() throws Exception {
+
+        byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.windowed"));
+        ByteBuffer buf = ByteBuffer.wrap(b_arr);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        double[][] windowed = new double[432][2048]; // FIXME: 2018 = FFT length (in this case frame length)
+        for (int t = 0; t<windowed.length; t++) {
+            for (int d=0; d<windowed[0].length; d++)
+                windowed[t][d] = (double) buf.getFloat();
+        }
+
+        return windowed;
+    }
+
+
+
+    public static double[][] providerMGCFromWindowedSignal() throws Exception {
+
+        byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.mgc"));
+        ByteBuffer buf = ByteBuffer.wrap(b_arr);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        double[][] mgc = new double[432][35]; // FIXME: 35 = order (34) + 1
+        for (int t = 0; t<mgc.length; t++) {
+            for (int d=0; d<mgc[0].length; d++)
+                mgc[t][d] = (double) buf.getFloat();
+        }
+
+        return mgc;
     }
 }
