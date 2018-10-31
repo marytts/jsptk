@@ -10,13 +10,31 @@ import com.google.common.io.Resources;
 import com.google.common.io.ByteStreams;
 
 /**
- *
+ *  Provider utilities
  *
  * @author <a href="mailto:slemaguer@coli.uni-saarland.de">Sébastien Le Maguer</a>
  */
 public class JSPTKProvider
 {
 
+
+    /******************************************************************
+     ** Some parameters used for the extraction using SPTK
+     ******************************************************************/
+    public static final int SAMPLING_RATE = 48000;
+    public static final int FFT_LEN = 2048;
+    public static final int FRAME_SHIFT = 240;
+    public static final int FRAME_LENGTH = 1200;
+    public static final Window WIN_TYPE = Window.swigToEnum(1);
+    public static final int MGC_ORDER = 34;
+    public static final double ALPHA = 0.55;
+    public static final double PER_ERR = 1.0E-08;
+    public static final double LOWER_F0 = 50;
+    public static final double UPPER_F0 = 250;
+
+    /******************************************************************
+     ** Providers
+     ******************************************************************/
     public static double[] providerB() throws Exception {
         URL url = JSPTKWrapperTest.class.getResource("/test.b");
         List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
@@ -151,7 +169,7 @@ public class JSPTKProvider
         byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.windowed"));
         ByteBuffer buf = ByteBuffer.wrap(b_arr);
         buf.order(ByteOrder.LITTLE_ENDIAN);
-        double[][] windowed = new double[432][2048]; // FIXME: 2018 = FFT length (in this case frame length)
+        double[][] windowed = new double[432][JSPTKProvider.FFT_LEN]; // FIXME: 2018 = FFT length (in this case frame length)
         for (int t = 0; t<windowed.length; t++) {
             for (int d=0; d<windowed[0].length; d++)
                 windowed[t][d] = (double) buf.getFloat();

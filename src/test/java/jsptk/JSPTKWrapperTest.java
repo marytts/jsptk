@@ -54,7 +54,7 @@ public class JSPTKWrapperTest {
         double[][] ref = JSPTKProvider.providerFramedSignal();
 
         // Run operation
-        double[][] test = JSPTKWrapper.frame(x, 1200, 240, false);
+        double[][] test = JSPTKWrapper.frame(x, JSPTKProvider.FRAME_LENGTH, JSPTKProvider.FRAME_SHIFT, false);
 
         // Assertion
         assertThat(test.length).isEqualTo(ref.length);
@@ -69,7 +69,7 @@ public class JSPTKWrapperTest {
         double[][] ref = JSPTKProvider.providerWindowedSignal();
 
         // Run operation
-        double[][] test = JSPTKWrapper.window(framed, 2048, 1, Window.swigToEnum(1));
+        double[][] test = JSPTKWrapper.window(framed, JSPTKProvider.FFT_LEN, 1, JSPTKProvider.WIN_TYPE);
 
         // Assertion
         assertThat(test.length).isEqualTo(ref.length);
@@ -84,7 +84,8 @@ public class JSPTKWrapperTest {
         double[][] ref = JSPTKProvider.providerMGCFromWindowedSignal();
 
         // Run operation
-        double[][] test = JSPTKWrapper.mgcepDefaultWav(windowed, 34, 0.55, 1.0E-08);
+        double[][] test = JSPTKWrapper.mgcepDefaultWav(windowed, JSPTKProvider.MGC_ORDER,
+                                                       JSPTKProvider.ALPHA, JSPTKProvider.PER_ERR);
 
         // Assertion
         assertThat(test.length).isEqualTo(ref.length);
@@ -100,7 +101,8 @@ public class JSPTKWrapperTest {
         double[] ref = JSPTKProvider.providerLF0RAPT();
 
         // Run operation
-        double[] test = JSPTKWrapper.pitch(x, 240, 48000, 0, 2, 50, 250, 0.0);
+        double[] test = JSPTKWrapper.pitch(x, JSPTKProvider.FRAME_SHIFT, JSPTKProvider.SAMPLING_RATE,
+                                           0, 2, JSPTKProvider.LOWER_F0, JSPTKProvider.UPPER_F0, 0.0);
 
         // Assertion
         assertThat(test).containsExactly(ref, within(1e-4));
