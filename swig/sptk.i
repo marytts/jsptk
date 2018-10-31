@@ -1,4 +1,6 @@
 %include carrays.i
+%array_functions( float, float_array );
+%array_functions( float*, float_p_array );
 %array_functions( double, double_array );
 %array_functions( double*, double_p_array );
 
@@ -314,7 +316,6 @@ void excite(double *pitch, int n, double *out, int fprd, int iprd, Boolean gauss
                             3 -> problem in init_dp_f0
 
 *****************************************************************/
-int rapt(float *input, float* output, int length, double sample_freq,
-     int frame_shift, double minF0, double maxF0, double voice_bias, int otype);
+int rapt(float *input, float* output, int length, double sample_freq, int frame_shift, double minF0, double maxF0, double voice_bias, int otype);
 
 void b2c(double *b, int m1, double *c, int m2, double a);

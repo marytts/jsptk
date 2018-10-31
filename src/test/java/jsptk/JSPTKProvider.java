@@ -175,4 +175,17 @@ public class JSPTKProvider
 
         return mgc;
     }
+
+    public static double[] providerLF0RAPT() throws Exception {
+
+        byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.lf0_rapt"));
+        ByteBuffer buf = ByteBuffer.wrap(b_arr);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        double[] lf0 = new double[432];
+        for (int t = 0; t<lf0.length; t++) {
+                lf0[t] = (double) buf.getFloat();
+        }
+
+        return lf0;
+    }
 }

@@ -91,4 +91,18 @@ public class JSPTKWrapperTest {
         for (int t=0; t<test.length; t++)
             assertThat(test[t]).containsExactly(ref[t], within(1e-4));
     }
+
+
+    @Test
+    public void testPITCH() throws Exception {
+        // Providing data
+        double[] x = JSPTKProvider.providerRAWSignal();
+        double[] ref = JSPTKProvider.providerLF0RAPT();
+
+        // Run operation
+        double[] test = JSPTKWrapper.pitch(x, 240, 48000, 0, 2, 50, 250, 0.0);
+
+        // Assertion
+        assertThat(test).containsExactly(ref, within(1e-4));
+    }
 }

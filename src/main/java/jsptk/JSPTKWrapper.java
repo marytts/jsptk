@@ -471,6 +471,46 @@ public class JSPTKWrapper
         return sp;
     }
 
+    /**
+     *  Method to extract pitch from raw signal.
+     *
+     *  For now only RAPT is supported
+     *
+     *  @param x the raw signal
+     *  @param frame_shift the frame shift (in points)
+     *  @param sampling_rate the sampling rate in Hz
+     *  @param atype (0: RAPT, 1: swipe (not supported yet))
+     *  @param otype (0: pitch, 1: f0, 2: log(f0))
+     *  @param lower_f0 lower f0 threshold
+     *  @param upper_f0 upper f0 threshold
+     *  @param voice_threshold the voicing decision thresold (optimal value depends on the method used to extract the F0, see SPTK documentation)
+     *  @return the pitch values
+     */
+    public static double[] pitch(double[] x, int frame_shift, int sampling_rate,
+                                 int atype, int otype,
+                                 double lower_f0, double upper_f0, double voice_threshold) {
+        int nb_frames = (x.length + frame_shift - 1) / frame_shift;
+        SWIGTYPE_p_float x_sp = JSPTKWrapper.java2swigFloat(x);
+        SWIGTYPE_p_float f0_sp = Sptk.new_float_array(nb_frames);
+
+        if (atype == 0) {
+            Sptk.rapt(x_sp, f0_sp,
+                      x.length, sampling_rate, frame_shift,
+                      lower_f0, upper_f0, voice_threshold, otype);
+        } else {
+            throw new IllegalArgumentException("Swipe is not implemented yet");
+            // Sptk.swipe(x_sp, x.length, sampling_rate, frame_shift, lower_f0, upper_f0,
+            //           voice_threshold, otype);
+        }
+
+        double[] f0 = JSPTKWrapper.swig2java(f0_sp, nb_frames);
+
+        JSPTKWrapper.clean(x_sp);
+        JSPTKWrapper.clean(f0_sp);
+
+        return f0;
+    }
+
     /**********************************************************************
      *** JNI Utilities
      **********************************************************************/
@@ -493,6 +533,24 @@ public class JSPTKWrapper
     }
 
     /**
+     *  Util method to convert a swig array of float to a native double array in java
+     *
+     *  This method doesn't clean any memory !
+     *
+     *  @param ar the swig array of float values
+     *  @param length the length of the array
+     *  @return the java native double array containing the values from the swig array
+     */
+    private static double[] swig2java(SWIGTYPE_p_float ar, int length) {
+        double[] res = new double[length];
+
+        for (int i=0; i<length; i++)
+            res[i] = Sptk.float_array_getitem(ar, i);
+
+        return res;
+    }
+
+    /**
      *  Utilitary method to generate a swig array from a java native double array
      *
      *  @param ar the double array
@@ -503,6 +561,22 @@ public class JSPTKWrapper
 
         for (int i=0; i<ar.length; i++)
             Sptk.double_array_setitem(res, i, ar[i]);
+
+        return res;
+    }
+
+
+    /**
+     *  Utilitary method to generate a swig float array from a java native double array
+     *
+     *  @param ar the double array
+     *  @return the swig float array containing the values from the java native double array
+     */
+    private static SWIGTYPE_p_float java2swigFloat(double[] ar) {
+        SWIGTYPE_p_float res = Sptk.new_float_array(ar.length);
+
+        for (int i=0; i<ar.length; i++)
+            Sptk.float_array_setitem(res, i, (float) ar[i]);
 
         return res;
     }
@@ -525,5 +599,14 @@ public class JSPTKWrapper
      */
     private static void clean(SWIGTYPE_p_double ar) {
         Sptk.delete_double_array(ar);
+    }
+
+    /**
+     *  Method to clear the memory of a swig double array
+     *
+     *  @param ar the swig array to free
+     */
+    private static void clean(SWIGTYPE_p_float ar) {
+        Sptk.delete_float_array(ar);
     }
 }
