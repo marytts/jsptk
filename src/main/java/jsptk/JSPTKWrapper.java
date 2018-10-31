@@ -1,7 +1,14 @@
 package jsptk;
 
+// IO
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.io.IOException;
 
+// Audio
+import javax.sound.sampled.AudioInputStream;
+
+// Native library loading
 import cz.adamh.utils.NativeUtils;
 
 /**
@@ -38,6 +45,22 @@ public class JSPTKWrapper
     /**********************************************************************
      *** Signal preparation
      **********************************************************************/
+    public static double[] extractRAWFromStream(AudioInputStream ais) throws IOException {
+
+        // Get the stream to a byte buffer
+        byte[] data = new byte[ais.available()];
+        ais.read(data);
+        ByteBuffer buf = ByteBuffer.wrap(data);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+
+        // Now extract raw values (short => double)
+        double[] x = new double[data.length / Short.BYTES];
+        for (int i=0; i<x.length; i++) {
+            x[i] = buf.getShort();
+        }
+
+        return x;
+    }
     /**
      *  Framing method.
      *

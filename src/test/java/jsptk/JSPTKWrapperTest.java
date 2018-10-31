@@ -1,8 +1,13 @@
 package jsptk;
 
+// Audio
+import javax.sound.sampled.AudioInputStream;
+
+// Assertions
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
+// Test annotations
 import org.testng.annotations.Test;
 
 public class JSPTKWrapperTest {
@@ -93,7 +98,6 @@ public class JSPTKWrapperTest {
             assertThat(test[t]).containsExactly(ref[t], within(1e-4));
     }
 
-
     @Test
     public void testPITCH() throws Exception {
         // Providing data
@@ -103,6 +107,19 @@ public class JSPTKWrapperTest {
         // Run operation
         double[] test = JSPTKWrapper.pitch(x, JSPTKProvider.FRAME_SHIFT, JSPTKProvider.SAMPLING_RATE,
                                            0, 2, JSPTKProvider.LOWER_F0, JSPTKProvider.UPPER_F0, 0.0);
+
+        // Assertion
+        assertThat(test).containsExactly(ref, within(1e-4));
+    }
+
+    @Test
+    public void testAISToRAW() throws Exception {
+        // Providing data
+        AudioInputStream ais = JSPTKProvider.providerAIS();
+        double[] ref = JSPTKProvider.providerRAWSignal();
+
+        // Run operation
+        double[] test = JSPTKWrapper.extractRAWFromStream(ais);
 
         // Assertion
         assertThat(test).containsExactly(ref, within(1e-4));

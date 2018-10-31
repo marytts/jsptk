@@ -1,5 +1,6 @@
 package jsptk;
 
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.net.URL;
@@ -8,6 +9,14 @@ import java.util.List;
 
 import com.google.common.io.Resources;
 import com.google.common.io.ByteStreams;
+
+
+// Audio
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+
 
 /**
  *  Provider utilities
@@ -205,5 +214,10 @@ public class JSPTKProvider
         }
 
         return lf0;
+    }
+
+    public static AudioInputStream providerAIS() throws Exception {
+        URL url = JSPTKWrapperTest.class.getResource("/cmu_us_arctic_slt_b0535.wav");
+        return AudioSystem.getAudioInputStream(url);
     }
 }
