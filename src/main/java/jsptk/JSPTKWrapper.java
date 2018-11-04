@@ -510,6 +510,86 @@ public class JSPTKWrapper
     }
 
     /**
+     *  Method to convert MGC vector to spectrum vector
+     *
+     *  @param mgc the MGC vector
+     *  @param alpha the all pass constant
+     *  @param gamma the gamma value
+     *  @param c ????
+     *  @param normalized_input input as normalized cepstrum
+     *  @param multiplied_gamma_input input as multiplied by gamma
+     *  @param fftlen the length of the FFT
+     *  @param output_type the output type
+     *  @param output_phase flag to indicate is phase instead of amplitude should be outputed
+     *  @return the spectrum
+     */
+    public static double[][] mgc2sp(double[][] mgc, double alpha, double gamma, int c,
+                                    boolean normalized_input, boolean multiplied_gamma_input,
+                                    int fftlen, int output_type, boolean output_phase) {
+        // Prepare some constants
+
+        int no = fftlen / 2 + 1;
+        double logk = 20.0 / Math.log(10.0);
+
+        // Prepare SWIG memory
+        double[][] sp = new double[mgc.length][no];
+        SWIGTYPE_p_double mgc_sp = Sptk.new_double_array(mgc[0].length);
+        SWIGTYPE_p_double x_sp = Sptk.new_double_array(fftlen);
+        SWIGTYPE_p_double y_sp = Sptk.new_double_array(fftlen);
+
+        for (int t=0; t<mgc.length; t++) {
+            // Prepare input (FIXME: finish this !)
+            copy(mgc[t], mgc_sp);
+
+            // Apply mgc2sp
+            Sptk.mgc2sp(mgc_sp, mgc[t].length-1, alpha, gamma, x_sp, y_sp, fftlen);
+
+            // Generate output
+            double[] x = swig2java(x_sp, no);
+            double[] y = swig2java(y_sp, no);
+            if (output_phase) {
+                switch(output_type) {
+                case 1:
+                    for (int i=no-1; i>=0; i--)
+                        sp[t][i] = y[i];
+                    break;
+                case 2:
+                    for (int i=no-1; i>=0; i--)
+                        sp[t][i] = y[i] * 180 / Math.PI;
+                    break;
+                default:
+                    for (int i=no-1; i>=0; i--)
+                        sp[t][i] = y[i] / Math.PI;
+                }
+            } else {
+                switch(output_type) {
+                case 1:
+                    break;
+                case 2:
+                    for (int i=no-1; i>=0; i--)
+                        sp[t][i] = Math.exp(x[i]);
+                    break;
+                case 3:
+                    for (int i=no-1; i>=0; i--)
+                        sp[t][i] = Math.exp(2 * x[i]);
+                    break;
+                default:
+                    for (int i=no-1; i>=0; i--)
+                        sp[t][i] *= logk;
+                }
+            }
+        }
+
+        // Clean memory
+        JSPTKWrapper.clean(mgc_sp);
+        JSPTKWrapper.clean(x_sp);
+        JSPTKWrapper.clean(y_sp);
+
+        // return the final spectrum
+        return sp;
+    }
+
+    /**
      *  The method to call fftr on a matrix of double, result of a framed data
      *
      *  @param c the double matrix of real coefficients
@@ -537,6 +617,7 @@ public class JSPTKWrapper
 
         return sp;
     }
+
 
     /**********************************************************************
      *** JNI Utilities

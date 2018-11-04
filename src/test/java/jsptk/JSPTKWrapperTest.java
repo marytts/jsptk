@@ -98,6 +98,25 @@ public class JSPTKWrapperTest {
             assertThat(test[t]).containsExactly(ref[t], within(1e-4));
     }
 
+
+    @Test
+    public void testMGC2SP() throws Exception {
+        // Providing data
+        double[][] mgc = JSPTKProvider.providerMGCFromWindowedSignal();
+        double[][] ref = JSPTKProvider.providerMGC2SP();
+
+        // Run operation
+        double[][] test = JSPTKWrapper.mgc2sp(mgc, JSPTKProvider.ALPHA, JSPTKProvider.GAMMA, 0,
+                                              false, false, JSPTKProvider.FFT_LEN,
+                                              JSPTKProvider.MGC2SP_OTYPE, false);
+        // Assertion
+        assertThat(test.length).isEqualTo(ref.length);
+        for (int t=0; t<test.length; t++)  {
+            assertThat(test[t]).containsExactly(ref[t], within(1e-2)); // FIXME: see for precision
+            System.out.println("it " + t + " passed");
+        }
+    }
+
     @Test
     public void testPITCH() throws Exception {
         // Providing data
