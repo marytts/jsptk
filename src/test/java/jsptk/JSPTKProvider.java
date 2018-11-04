@@ -25,8 +25,6 @@ import javax.sound.sampled.AudioSystem;
  */
 public class JSPTKProvider
 {
-
-
     /******************************************************************
      ** Some parameters used for the extraction using SPTK
      ******************************************************************/
@@ -36,7 +34,10 @@ public class JSPTKProvider
     public static final int FRAME_LENGTH = 1200;
     public static final Window WIN_TYPE = Window.swigToEnum(1);
     public static final int MGC_ORDER = 34;
+    public static final int NB_FRAMES = 432;
     public static final double ALPHA = 0.55;
+    public static final double GAMMA = 0;
+    public static final int MGC2SP_OTYPE = 2;
     public static final double PER_ERR = 1.0E-08;
     public static final double LOWER_F0 = 50;
     public static final double UPPER_F0 = 250;
@@ -163,7 +164,7 @@ public class JSPTKProvider
         byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.framed"));
         ByteBuffer buf = ByteBuffer.wrap(b_arr);
         buf.order(ByteOrder.LITTLE_ENDIAN);
-        double[][] framed = new double[432][1200]; // NOTE: 1200 = frame length used, frameshift = 240 => 432 frames
+        double[][] framed = new double[NB_FRAMES][1200]; // NOTE: 1200 = frame length used, frameshift = 240 => NB_FRAMES frames
         for (int t = 0; t<framed.length; t++) {
             for (int d=0; d<framed[0].length; d++)
                 framed[t][d] = (double) buf.getFloat();
@@ -178,7 +179,7 @@ public class JSPTKProvider
         byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.windowed"));
         ByteBuffer buf = ByteBuffer.wrap(b_arr);
         buf.order(ByteOrder.LITTLE_ENDIAN);
-        double[][] windowed = new double[432][JSPTKProvider.FFT_LEN]; // FIXME: 2018 = FFT length (in this case frame length)
+        double[][] windowed = new double[NB_FRAMES][JSPTKProvider.FFT_LEN]; // FIXME: 2018 = FFT length (in this case frame length)
         for (int t = 0; t<windowed.length; t++) {
             for (int d=0; d<windowed[0].length; d++)
                 windowed[t][d] = (double) buf.getFloat();
@@ -189,12 +190,27 @@ public class JSPTKProvider
 
 
 
+    public static double[][] providerMGC2SP() throws Exception {
+
+        byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.mgc2sp"));
+        ByteBuffer buf = ByteBuffer.wrap(b_arr);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        double[][] sp = new double[NB_FRAMES][FFT_LEN/2+1];
+        for (int t = 0; t<sp.length; t++) {
+            for (int d=0; d<sp[0].length; d++)
+                sp[t][d] = (double) buf.getFloat();
+        }
+
+        return sp;
+    }
+
+
     public static double[][] providerMGCFromWindowedSignal() throws Exception {
 
         byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.mgc"));
         ByteBuffer buf = ByteBuffer.wrap(b_arr);
         buf.order(ByteOrder.LITTLE_ENDIAN);
-        double[][] mgc = new double[432][35]; // FIXME: 35 = order (34) + 1
+        double[][] mgc = new double[NB_FRAMES][MGC_ORDER+1];
         for (int t = 0; t<mgc.length; t++) {
             for (int d=0; d<mgc[0].length; d++)
                 mgc[t][d] = (double) buf.getFloat();
@@ -208,7 +224,7 @@ public class JSPTKProvider
         byte[] b_arr = ByteStreams.toByteArray(JSPTKWrapperTest.class.getResourceAsStream("/cmu_us_arctic_slt_b0535.lf0_rapt"));
         ByteBuffer buf = ByteBuffer.wrap(b_arr);
         buf.order(ByteOrder.LITTLE_ENDIAN);
-        double[] lf0 = new double[432];
+        double[] lf0 = new double[NB_FRAMES];
         for (int t = 0; t<lf0.length; t++) {
                 lf0[t] = (double) buf.getFloat();
         }
