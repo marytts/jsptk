@@ -121,7 +121,7 @@ model {
 /**********************************************************************************************
  ** Project meta + publishing part
  ***********************************************************************************************/
-version '0.2'
+version '0.3-SNAPSHOT'
 group "de.dfki.mary"
 description "Artifact containing a wrapper for SPTK"
 
