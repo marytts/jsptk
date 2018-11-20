@@ -525,7 +525,7 @@ public class JSPTKWrapper
      */
     public static double[][] mgc2sp(double[][] mgc, double alpha, double gamma, int c,
                                     boolean normalized_input, boolean multiplied_gamma_input,
-                                    int fftlen, int output_type, boolean output_phase) {
+                                    int fftlen, int output_type, boolean output_phase) throws Exception {
         // Prepare some constants
 
         int no = fftlen / 2 + 1;
@@ -538,10 +538,31 @@ public class JSPTKWrapper
         SWIGTYPE_p_double y_sp = Sptk.new_double_array(fftlen);
 
         for (int t=0; t<mgc.length; t++) {
-            // Prepare input (FIXME: finish this !)
-            copy(mgc[t], mgc_sp);
+
+            // Prepare input
+            if (normalized_input) {
+                copy(mgc[t], mgc_sp);
+                Sptk.ignorm(mgc_sp, mgc_sp, mgc[t].length-1, gamma);
+                mgc[t] = swig2java(mgc_sp, mgc[t].length);
+            } else if (multiplied_gamma_input) {
+                if (gamma == 0) {
+                    throw new Exception("gamma for input mgc coefficients should not equal to 0 if " +
+                                        " multiplied_gamma_input parameter is set to true");
+                }
+                mgc[t][0] = (mgc[t][0] - 1.0) / gamma;
+            }
+
+            if (multiplied_gamma_input) {
+                if (gamma == 0) {
+                    throw new Exception("gamma for input mgc coefficients should not equal to 0 if " +
+                                        " multiplied_gamma_input parameter is set to true");
+                }
+                for (int i = mgc[t].length-1; i > 0; i--)
+                    mgc[t][i] /= gamma;
+            }
 
             // Apply mgc2sp
+            copy(mgc[t], mgc_sp);
             Sptk.mgc2sp(mgc_sp, mgc[t].length-1, alpha, gamma, x_sp, y_sp, fftlen);
 
             // Generate output
