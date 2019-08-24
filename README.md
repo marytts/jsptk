@@ -1,6 +1,6 @@
 # jsptk
 
-[![Build Status](https://travis-ci.org/marytts/jsptk.svg?branch=master)](https://travis-ci.org/marytts/jsptk)
+[![Build Status](https://travis-ci.org/marytts/jsptk.svg?branch=master)](https://travis-ci.org/marytts/jsptk) [ ![Download](https://api.bintray.com/packages/marytts/marytts/jsptk/images/download.svg?version=0.2) ](https://bintray.com/marytts/marytts/jsptk/0.2/link)
 
 
 A Java wrapper for [Speech Signal Processing Toolkit (SPTK)](http://sp-tk.sourceforge.net/).
