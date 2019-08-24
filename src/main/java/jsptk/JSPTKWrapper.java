@@ -596,7 +596,7 @@ public class JSPTKWrapper
                     break;
                 default:
                     for (int i=no-1; i>=0; i--)
-                        sp[t][i] *= logk;
+                        sp[t][i] = x[i] * logk;
                 }
             }
         }
